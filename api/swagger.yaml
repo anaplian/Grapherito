@@ -1,0 +1,139 @@
+---
+swagger: "2.0"
+info:
+  description: "Makes graph images from data sets"
+  version: "1.0.0"
+  title: "Grapherito"
+basePath: "/v1"
+schemes:
+- "http"
+produces:
+- "application/json"
+paths:
+  /graph-requests:
+    post:
+      description: "The POST action creates a new request for a graph image."
+      operationId: "graph_requestsPOST"
+      parameters:
+      - in: "body"
+        name: "GraphRequestBody"
+        description: "Description of data to be graphed."
+        required: true
+        schema:
+          $ref: "#/definitions/GraphRequestBody"
+      responses:
+        200:
+          description: "A request has been received."
+          schema:
+            $ref: "#/definitions/GraphRequestResponse"
+          examples:
+            application/json:
+              graphRequestID: "aca38948-3861-460d-86bc-4f7eee3e33de"
+              pollingURL: "http://example.com/graph-requests/aca38948-3861-460d-86bc-4f7eee3e33de"
+        400:
+          description: "The graph request could not be processed because the request\
+            \ body is invalid."
+          schema:
+            $ref: "#/definitions/400"
+        default:
+          description: "A server error has occurred."
+          schema:
+            $ref: "#/definitions/500"
+      x-swagger-router-controller: "Default"
+  /graph-requests/{graphRequestID}:
+    get:
+      description: "Get the details of a particular graph request"
+      operationId: "graph_requestsGraphRequestIDGET"
+      parameters:
+      - name: "graphRequestID"
+        in: "path"
+        description: "Unique ID for the graph request"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A successful response containing information about the graph\
+            \ request."
+          schema:
+            $ref: "#/definitions/GraphRequest"
+          examples:
+            application/json:
+              imageStatus: "FINSIHED"
+              imageURL: "http://example.com/images/aca38948-3861-460d-86bc-4f7eee3e33de.png"
+        404:
+          description: "The graph request ID could not be found."
+          schema:
+            $ref: "#/definitions/404"
+        default:
+          description: "A server error has occurred."
+          schema:
+            $ref: "#/definitions/500"
+      x-swagger-router-controller: "Default"
+definitions:
+  400:
+    type: "string"
+    enum:
+    - "Bad Request."
+  404:
+    type: "string"
+    enum:
+    - "Resource not found."
+  500:
+    type: "string"
+    enum:
+    - "Internal Server Error."
+  GraphRequest:
+    type: "object"
+    required:
+    - "imageStatus"
+    properties:
+      imageStatus:
+        type: "string"
+        enum:
+        - "PENDING"
+        - "FAILED"
+        - "FINISHED"
+      imageURL:
+        type: "string"
+  GraphRequestBody:
+    type: "object"
+    required:
+    - "data"
+    - "graphType"
+    - "title"
+    - "yAxisLabel"
+    properties:
+      graphType:
+        type: "string"
+        enum:
+        - "TIME_SERIES"
+      title:
+        type: "string"
+      yAxisLabel:
+        type: "string"
+      data:
+        type: "array"
+        items:
+          $ref: "#/definitions/TimeSeriesDatum"
+  GraphRequestResponse:
+    type: "object"
+    required:
+    - "graphRequestID"
+    - "pollingURL"
+    properties:
+      graphRequestID:
+        type: "string"
+      pollingURL:
+        type: "string"
+  TimeSeriesDatum:
+    type: "object"
+    required:
+    - "time"
+    - "value"
+    properties:
+      time:
+        type: "string"
+        format: "dateTime"
+      value:
+        type: "number"
+        format: "float"
